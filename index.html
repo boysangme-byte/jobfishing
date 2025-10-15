@@ -3,15 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>커리어 낚시터 (최종 수정판)</title>
+    <title>커리어 낚시터 (UI 위치 수정판)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
         body { font-family: 'Jua', sans-serif; margin: 0; background-color: #A6DCEF; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
         .game-world { width: 100%; max-width: 1200px; height: 100%; max-height: 800px; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.2); overflow: hidden; background-image: url('1.png'); background-size: cover; background-position: center; }
-        .first-person-ui { position: absolute; bottom: 0; left: 0; width: 100%; height: 300px; z-index: 50; pointer-events: none; }
-        .fishing-rod { position: absolute; bottom: -150px; right: -250px; width: 1200px; height: 900px; background-image: url('2.png'); background-size: contain; background-repeat: no-repeat; transform-origin: 30% 80%; transition: transform 0.5s cubic-bezier(0.5, -0.75, 0.25, 1.5); pointer-events: none; }
+        
+        /* --- [최종 수정] 컨트롤 패널 위치 상단으로 조정 --- */
+        .control-panel { 
+            position: absolute; 
+            top: 20px; 
+            left: 20px; 
+            background-color: rgba(253, 250, 241, 0.95); padding: 15px; border-radius: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.3); border: 5px solid #8B4513; display: flex; gap: 10px; align-items: flex-end; z-index: 51; pointer-events: auto; 
+        }
+        .fishing-rod { 
+            position: absolute; bottom: -150px; right: -250px; width: 1200px; height: 900px; 
+            background-image: url('2.png'); 
+            background-size: contain; background-repeat: no-repeat; transform-origin: 30% 80%; 
+            transition: transform 0.5s cubic-bezier(0.5, -0.75, 0.25, 1.5); pointer-events: none;
+            z-index: 40; /* 컨트롤 패널보다 아래, 물고기보다 위에 위치 */
+        }
         .fishing-rod.casting { transform: rotate(-15deg) scale(1.05); }
-        .control-panel { position: absolute; bottom: 20px; left: 20px; background-color: rgba(253, 250, 241, 0.95); padding: 15px; border-radius: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.3); border: 5px solid #8B4513; display: flex; gap: 10px; align-items: flex-end; z-index: 51; pointer-events: auto; }
+        
         #aquarium-btn { position: absolute; top: 20px; right: 20px; font-size: 1.5em; padding: 10px 15px; cursor: pointer; background-color: #4fc3f7; color: white; border-radius: 10px; border: 3px solid #039be5; z-index: 51; pointer-events: auto; }
         .filter-group { min-width: 130px; }
         .filter-group label.group-title { font-size: 1.2em; color: #8B4513; display: block; margin-bottom: 5px; text-align: center; }
@@ -35,7 +48,17 @@
         #action-btn.ready { background-color: #4caf50; border-color: #388e3c; } #action-btn.decision { background-color: #f44336; border-color: #d32f2f; }
         #action-btn:active { transform: translateY(3px); box-shadow: 0 1px 0; }
         .splash { position: absolute; width: 100px; height: 100px; background-color: white; border-radius: 50%; opacity: 0.7; animation: splash-effect 0.5s ease-out forwards; z-index: 15; } @keyframes splash-effect { from { transform: scale(0); opacity: 0.7; } to { transform: scale(2); opacity: 0; } }
-        .game-object { position: absolute; background-size: contain; background-repeat: no-repeat; cursor: pointer; animation: float 10s ease-in-out infinite; z-index: 20; transition: transform 0.2s; will-change: transform; } .game-object:hover { transform: scale(1.15) rotate(5deg); } @keyframes float { 0% { transform: translate(0, 0) rotate(-5deg); } 50% { transform: translate(15px, -15px) rotate(5deg); } 100% { transform: translate(0, 0) rotate(-5deg); } }
+        
+        .game-object { 
+            position: absolute; background-size: contain; background-repeat: no-repeat; cursor: pointer; 
+            animation: float 10s ease-in-out infinite; z-index: 20; /* 낚싯대보다 위에 오도록 z-index 조정 */
+            transition: transform 0.2s; will-change: transform;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: flex-start;
+        } 
+        .game-object:hover { transform: scale(1.15) rotate(5deg); } 
+        @keyframes float { 0% { transform: translate(0, 0) rotate(-5deg); } 50% { transform: translate(15px, -15px) rotate(5deg); } 100% { transform: translate(0, 0) rotate(-5deg); } }
+        .fish-name { font-size: 0.9em; font-weight: bold; color: #333; background-color: rgba(255, 255, 255, 0.7); padding: 2px 5px; border-radius: 3px; margin-bottom: 5px; white-space: nowrap; text-align: center; pointer-events: none; }
         .mackerel { width: 150px; height: 113px; background-image: url('3.png'); }
         .tuna { width: 180px; height: 160px; background-image: url('4.png'); }
         .whale { width: 250px; height: 188px; background-image: url('5.png'); }
@@ -51,48 +74,42 @@
 
     <div class="game-world">
         <div id="fish-container"></div>
-        <div class="first-person-ui">
-            <div class="fishing-rod" id="fishing-rod"></div>
-            <div class="control-panel">
-                <div class="filter-group">
-                    <label class="group-title">낚시터</label>
-                    <div style="display: flex; gap: 5px;">
-                        <select id="loc-major"><option value="all">- 전국 -</option></select>
-                        <select id="loc-minor" disabled><option value="">- 시/군/구 -</option></select>
-                    </div>
+        <div class="fishing-rod" id="fishing-rod"></div>
+        <div class="control-panel">
+            <div class="filter-group">
+                <label class="group-title">낚시터</label>
+                <div style="display: flex; gap: 5px;">
+                    <select id="loc-major"><option value="all">- 전국 -</option></select>
+                    <select id="loc-minor" disabled><option value="">- 시/군/구 -</option></select>
                 </div>
-                <div class="filter-group">
-                    <label class="group-title">특제 미끼 (직무)</label>
-                    <div class="checkbox-section">
-                        <div id="job-roles-dev" class="checkbox-container"></div>
-                        <div id="job-roles-biz" class="checkbox-container"></div>
-                    </div>
+            </div>
+            <div class="filter-group">
+                <label class="group-title">특제 미끼 (직무)</label>
+                <div class="checkbox-section">
+                    <div id="job-roles-dev" class="checkbox-container"></div>
+                    <div id="job-roles-biz" class="checkbox-container"></div>
                 </div>
-                <div class="filter-group">
-                    <label class="group-title">미끼 등급 (경력)</label>
-                    <div id="years-container" class="checkbox-container"></div>
-                </div>
-                <div class="game-controls">
-                    <div class="gauge-container"><div class="gauge-label">파워</div><div class="power-gauge" id="power-gauge"><div class="power-bar" id="power-bar"></div></div></div>
-                    <div class="gauge-container"><div class="gauge-label">방향</div><div class="angle-gauge" id="angle-gauge"><div class="angle-indicator" id="angle-indicator"></div></div></div>
-                    <button id="action-btn" class="ready">캐스팅 시작</button>
-                </div>
+            </div>
+            <div class="filter-group">
+                <label class="group-title">미끼 등급 (경력)</label>
+                <div id="years-container" class="checkbox-container"></div>
+            </div>
+            <div class="game-controls">
+                <div class="gauge-container"><div class="gauge-label">파워</div><div class="power-gauge" id="power-gauge"><div class="power-bar" id="power-bar"></div></div></div>
+                <div class="gauge-container"><div class="gauge-label">방향</div><div class="angle-gauge" id="angle-gauge"><div class="angle-indicator" id="angle-indicator"></div></div></div>
+                <button id="action-btn" class="ready">캐스팅 시작</button>
             </div>
         </div>
         <button id="aquarium-btn">내 수족관</button>
     </div>
     
-    <div class="modal-bg" id="job-modal">
-        <div class="modal-content"><span class="close-btn">&times;</span><h2 id="modal-title"></h2><p><strong>- 종류:</strong> <span id="modal-fish-type"></span></p><p><strong>- 회사:</strong> <span id="modal-company"></span></p><p><strong>- 위치:</strong> <span id="modal-location"></span></p><a id="modal-link" href="#" target="_blank" rel="noopener noreferrer">자세한 공고 보기</a><br><br><button id="add-to-aquarium-btn">수족관에 담기</button></div>
-    </div>
-    <div class="modal-bg" id="aquarium-modal">
-        <div class="modal-content"><span class="close-btn">&times;</span><h2>내 수족관</h2><ul id="aquarium-list"></ul></div>
-    </div>
-
     <script>
         // --- 데이터 ---
-        const locations = { "서울": ["강남구", "서초구", "송파구", "마포구", "영등포구", "구로구", "금천구", "성동구"], "경기": ["성남시", "수원시", "용인시", "화성시", "고양시"], "부산": ["해운대구", "부산진구"], "인천": ["연수구"], "대구": ["수성구"], "대전": ["유성구"], "광주": ["서구"] };
-        const locationSlugs = { "성남시": "pangyo" };
+        const locations = {
+            "서울": { "전체": "seoul", "강남구": "seoul.gangnam-gu", "서초구": "seoul.seocho-gu", "송파구": "seoul.songpa-gu", "마포구": "seoul.mapo-gu", "영등포구": "seoul.yeongdeungpo-gu", "구로구": "seoul.guro-gu", "금천구": "seoul.geumcheon-gu", "성동구": "seoul.seongdong-gu" },
+            "경기": { "전체": "gyeonggi", "성남시": "gyeonggi.seongnam-si", "수원시": "gyeonggi.suwon-si", "용인시": "gyeonggi.yongin-si", "화성시": "gyeonggi.hwaseong-si", "고양시": "gyeonggi.goyang-si" },
+            "부산": { "전체": "busan" }, "인천": { "전체": "incheon" }, "대구": { "전체": "daegu" }, "대전": { "전체": "daejeon" }, "광주": { "전체": "gwangju" }
+        };
         const jobRoles = {
             "개발": { "서버/백엔드": 872, "프론트엔드": 873, "웹 풀스택": 518, "안드로이드": 899, "iOS": 895, "데브옵스": 655, "데이터 엔지니어": 677, "AI/ML": 678, "DBA": 517, "QA": 665 },
             "기획/마케팅": { "서비스 기획": 674, "PM": 672, "사업개발": 530, "콘텐츠 마케터": 900, "퍼포먼스 마케터": 659, "브랜드 마케터": 660, "디자이너": 507 }
@@ -113,18 +130,14 @@
         const jobRolesDevContainer = document.getElementById('job-roles-dev');
         const jobRolesBizContainer = document.getElementById('job-roles-biz');
         
-        // --- Game State ---
         let gameState = 'ready'; let power = 0; let angle = 0; let currentJobData = null;
         
-        // --- Sound Functions ---
         const sounds = { cast: document.getElementById('cast-sound'), splash: document.getElementById('splash-sound'), click: document.getElementById('click-sound'), };
-        function playSound(name) { try { if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play(); } } catch (e) { console.warn("Sound play failed. Did you set the file paths?"); } }
+        function playSound(name) { try { if (sounds[name]) { sounds[name].currentTime = 0; sounds[name].play(); } } catch (e) {} }
 
-        // --- Modals ---
         const jobModal = { bg: document.getElementById('job-modal'), title: document.getElementById('modal-title'), fishType: document.getElementById('modal-fish-type'), company: document.getElementById('modal-company'), location: document.getElementById('modal-location'), link: document.getElementById('modal-link'), addBtn: document.getElementById('add-to-aquarium-btn') };
         const aquariumModal = { bg: document.getElementById('aquarium-modal'), list: document.getElementById('aquarium-list') };
 
-        // --- Initialize ---
         function init() {
             Object.keys(locations).forEach(major => locMajorSelect.add(new Option(major, major)));
             jobRolesDevContainer.innerHTML = '<div class="category-title">개발</div>';
@@ -154,12 +167,19 @@
         function populateMinorLocations() {
             const major = locMajorSelect.value;
             locMinorSelect.innerHTML = '';
-            locMinorSelect.add(new Option("- 시/군/구 -", ""));
+            locMinorSelect.disabled = true;
             if (major && major !== 'all' && locations[major]) {
+                const districts = locations[major];
+                // '전체' 옵션 추가 (선택적)
+                if (Object.keys(districts).length > 1) { // 1차 지역만 있는 경우 '전체'를 기본으로
+                    locMinorSelect.add(new Option("- 전체 -", districts['전체']));
+                }
+                Object.entries(districts).forEach(([name, slug]) => {
+                    if (name !== '전체') { // '전체'는 이미 위에서 추가했거나, 1차 지역만 있는 경우 자동 처리
+                        locMinorSelect.add(new Option(name, slug));
+                    }
+                });
                 locMinorSelect.disabled = false;
-                locations[major].forEach(minor => locMinorSelect.add(new Option(minor, minor)));
-            } else {
-                locMinorSelect.disabled = true;
             }
         }
 
@@ -194,31 +214,32 @@
             const params = new URLSearchParams({ country: 'kr', job_sort: 'company.response_rate_order' });
             let limit = 15; if (power > 90) limit = 40; else if (power > 60) limit = 25; params.set('limit', limit);
             
-            const majorLoc = locMajorSelect.value;
-            const minorLoc = locMinorSelect.value;
-            let finalLoc = '';
-            if (majorLoc !== 'all') {
-                if (minorLoc) { finalLoc = (locationSlugs[minorLoc] || minorLoc.replace(/시|군|구$/, '').toLowerCase()); }
-                else if (majorLoc) { finalLoc = majorLoc.toLowerCase(); }
+            const majorLocKey = locMajorSelect.value;
+            const minorLocSlug = locMinorSelect.value; // 이제 minorLocSelect.value 자체가 슬러그임
+            if (majorLocKey !== 'all') {
+                const finalLocSlug = minorLocSlug || locations[majorLocKey]['전체'];
+                if (finalLocSlug) params.set('locations', finalLocSlug);
             }
-            if(finalLoc) params.set('locations', finalLoc);
             
             const selectedRoles = Array.from(document.querySelectorAll('input[name="job_roles"]:checked')).map(cb => cb.value);
             selectedRoles.forEach(roleId => params.append('tag_type_ids', roleId));
+            
             const selectedYears = Array.from(document.querySelectorAll('input[name="years"]:checked')).map(cb => cb.value);
-            if (selectedYears.length > 0 && !selectedYears.includes('-1')) {
+            if (selectedYears.includes('-1')) {
+                params.set('years', '-1');
+            } else if (selectedYears.length > 0) {
                 selectedYears.forEach(year => params.append('years', year));
             }
-
+            
             let baseKeyword = "";
             if (angle < -0.6) baseKeyword += " 스타트업";
             else if (angle > 0.6) baseKeyword += " 대기업";
             if (baseKeyword.trim()) params.set('keyword', baseKeyword.trim());
             
             const WANTED_URL = `https://www.wanted.co.kr/api/v4/jobs?${params.toString()}`;
-            // 개발 시 CORS Unblock 확장 프로그램 사용을 권장합니다. 그럴 경우 아래 주소를 빈 문자열 ''로 변경하세요.
             const PROXY_URL = 'https://api.allorigins.win/raw?url=';
             const requestUrl = PROXY_URL ? PROXY_URL + encodeURIComponent(WANTED_URL) : WANTED_URL;
+            
             const response = await fetch(requestUrl);
             if (!response.ok) throw new Error(`HTTP Error! Status: ${response.status}`);
             return (await response.json()).data;
@@ -239,11 +260,19 @@
                     splash.className = 'splash';
                     splash.style.top = `${top}%`; splash.style.left = `${left}%`;
                     fishContainer.appendChild(splash); playSound('splash');
+                    
                     const obj = document.createElement('div');
                     const objInfo = getObjectType(job);
                     obj.className = `game-object ${objInfo.className}`;
                     obj.style.top = `${top}%`; obj.style.left = `${left}%`;
                     obj.style.animationDelay = `${Math.random() * 5}s`;
+                    
+                    // --- [추가] 회사 이름 텍스트 노출 ---
+                    const companyName = document.createElement('div');
+                    companyName.className = 'fish-name';
+                    companyName.textContent = job.company.name;
+                    obj.appendChild(companyName); // 물고기 객체 내부에 회사 이름 추가
+
                     obj.addEventListener('click', () => showJobDetails(job, objInfo));
                     fishContainer.appendChild(obj);
                 }, i * 150);
