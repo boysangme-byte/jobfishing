@@ -3,25 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>커리어 낚시터 (최종판)</title>
+    <title>커리어 낚시터 (최종 수정판)</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Jua&display=swap');
         body { font-family: 'Jua', sans-serif; margin: 0; background-color: #A6DCEF; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
-        .game-world {
-            width: 100%; max-width: 1200px; height: 100%; max-height: 800px;
-            position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.2); overflow: hidden;
-            /* --- [확인] 배경 이미지 적용 (1.png) --- */
-            background-image: url('1.png');
-            background-size: cover; background-position: center;
-        }
+        .game-world { width: 100%; max-width: 1200px; height: 100%; max-height: 800px; position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.2); overflow: hidden; background-image: url('1.png'); background-size: cover; background-position: center; }
         .first-person-ui { position: absolute; bottom: 0; left: 0; width: 100%; height: 300px; z-index: 50; pointer-events: none; }
-        .fishing-rod {
-            position: absolute; bottom: -150px; right: -250px; width: 1200px; height: 900px;
-            /* --- [확인] 낚싯대 이미지 적용 (2.png) --- */
-            background-image: url('2.png');
-            background-size: contain; background-repeat: no-repeat; transform-origin: 30% 80%;
-            transition: transform 0.5s cubic-bezier(0.5, -0.75, 0.25, 1.5); pointer-events: none;
-        }
+        .fishing-rod { position: absolute; bottom: -150px; right: -250px; width: 1200px; height: 900px; background-image: url('2.png'); background-size: contain; background-repeat: no-repeat; transform-origin: 30% 80%; transition: transform 0.5s cubic-bezier(0.5, -0.75, 0.25, 1.5); pointer-events: none; }
         .fishing-rod.casting { transform: rotate(-15deg) scale(1.05); }
         .control-panel { position: absolute; bottom: 20px; left: 20px; background-color: rgba(253, 250, 241, 0.95); padding: 15px; border-radius: 15px; box-shadow: 5px 5px 10px rgba(0,0,0,0.3); border: 5px solid #8B4513; display: flex; gap: 10px; align-items: flex-end; z-index: 51; pointer-events: auto; }
         #aquarium-btn { position: absolute; top: 20px; right: 20px; font-size: 1.5em; padding: 10px 15px; cursor: pointer; background-color: #4fc3f7; color: white; border-radius: 10px; border: 3px solid #039be5; z-index: 51; pointer-events: auto; }
@@ -48,14 +36,11 @@
         #action-btn:active { transform: translateY(3px); box-shadow: 0 1px 0; }
         .splash { position: absolute; width: 100px; height: 100px; background-color: white; border-radius: 50%; opacity: 0.7; animation: splash-effect 0.5s ease-out forwards; z-index: 15; } @keyframes splash-effect { from { transform: scale(0); opacity: 0.7; } to { transform: scale(2); opacity: 0; } }
         .game-object { position: absolute; background-size: contain; background-repeat: no-repeat; cursor: pointer; animation: float 10s ease-in-out infinite; z-index: 20; transition: transform 0.2s; will-change: transform; } .game-object:hover { transform: scale(1.15) rotate(5deg); } @keyframes float { 0% { transform: translate(0, 0) rotate(-5deg); } 50% { transform: translate(15px, -15px) rotate(5deg); } 100% { transform: translate(0, 0) rotate(-5deg); } }
-        
-        /* --- [확인] 이미지 기반 오브젝트 스타일 --- */
         .mackerel { width: 150px; height: 113px; background-image: url('3.png'); }
         .tuna { width: 180px; height: 160px; background-image: url('4.png'); }
         .whale { width: 250px; height: 188px; background-image: url('5.png'); }
         .treasure-chest { width: 150px; height: 125px; background-image: url('6.png'); }
         .trash { width: 80px; height: 80px; background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="%238B4513" d="M20,90 L20,40 Q20,30 30,30 L70,30 Q80,30 80,40 L80,60 L95,60 L95,90 L20,90 Z M30,20 L70,20 L70,30 L30,30 Z"/></svg>'); }
-        
         .modal-bg { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; justify-content: center; align-items: center; z-index: 100; } .modal-content { background: #fdfaf1; padding: 20px 30px; border-radius: 15px; width: 90%; max-width: 500px; border: 10px solid #8B4513; position: relative; } .close-btn { position: absolute; top: 5px; right: 15px; font-size: 2.5em; cursor: pointer; } #aquarium-list { list-style: none; padding: 0; max-height: 400px; overflow-y: auto; } #aquarium-list li { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #ddd; } #aquarium-list li button { font-family: 'Jua', sans-serif; font-size: 0.9em; padding: 3px 8px; background-color: #ef5350; border: none; color: white; border-radius: 5px; cursor:pointer;}
     </style>
 </head>
@@ -106,7 +91,7 @@
 
     <script>
         // --- 데이터 ---
-        const locations = { "서울": ["강남구", "서초구", "송파구", "마포구", "영등포구", "구로구", "금천구", "성동구"], "경기": ["성남시", "수원시", "용인시", "화성시", "고양시"], "부산": ["해운대구", "부산진구"], "인천": ["연수구"], "대구": ["수성구", "대전": ["유성구"], "광주": ["서구"] };
+        const locations = { "서울": ["강남구", "서초구", "송파구", "마포구", "영등포구", "구로구", "금천구", "성동구"], "경기": ["성남시", "수원시", "용인시", "화성시", "고양시"], "부산": ["해운대구", "부산진구"], "인천": ["연수구"], "대구": ["수성구"], "대전": ["유성구"], "광주": ["서구"] };
         const locationSlugs = { "성남시": "pangyo" };
         const jobRoles = {
             "개발": { "서버/백엔드": 872, "프론트엔드": 873, "웹 풀스택": 518, "안드로이드": 899, "iOS": 895, "데브옵스": 655, "데이터 엔지니어": 677, "AI/ML": 678, "DBA": 517, "QA": 665 },
@@ -163,7 +148,7 @@
                     if (cb !== noExpCheckbox) { cb.disabled = isChecked; if (isChecked) cb.checked = false; cb.parentElement.classList.toggle('disabled-label', isChecked); }
                 });
             });
-            populateMinorLocations(); // 초기 로드 시 호출
+            populateMinorLocations();
         }
         
         function populateMinorLocations() {
@@ -231,6 +216,7 @@
             if (baseKeyword.trim()) params.set('keyword', baseKeyword.trim());
             
             const WANTED_URL = `https://www.wanted.co.kr/api/v4/jobs?${params.toString()}`;
+            // 개발 시 CORS Unblock 확장 프로그램 사용을 권장합니다. 그럴 경우 아래 주소를 빈 문자열 ''로 변경하세요.
             const PROXY_URL = 'https://api.allorigins.win/raw?url=';
             const requestUrl = PROXY_URL ? PROXY_URL + encodeURIComponent(WANTED_URL) : WANTED_URL;
             const response = await fetch(requestUrl);
